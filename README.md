@@ -145,6 +145,42 @@ Wanna dive into the wild world of crypto donations, onion servers, and making ba
 
 Welcome to the future, where your transactions are as secure as your DMs should be. Remember, this isn't just about making money; it's about building a community, supporting science, and staying secure. So, let's get to work, but also let's keep it fun. Stay safe, stay savvy, and let's disrupt the digital world one transaction at a time. 🎉💥
 
----
+## 🚀 Proof of Computing: Get Rewarded for Flexing Your AI Muscles! 💪🤖
 
-**Note:** This README is for the cool cats and kittens who know their way around a keyboard and a blockchain. If terms like `.onion` and ECDSA sound like gibberish, you might want to hit up some tutorials first. We're all about that self-improvement life. 📚💪
+Yo, fam! Welcome to the future where your brainpower boosts your bank balance. Welcome to the lit side of tech – **Proof of Computing**. It’s not just about mining; it’s about shining. 💎✨
+
+### 🧠 Train & Gain
+
+Forget hitting the gym; let's get those neural networks pumping! Here’s the deal:
+
+- **Train a Model, Stack that Coin**: Dive into our platform, pick a model, and start training. Your computer does the heavy lifting, and you? You just chill and watch the rewards roll in. 🏋️‍♂️💰
+
+- **Eco-Friendly Flex**: Sick of blockchain baddies wrecking the planet? Us too. Proof of Computing is all about that green energy, baby. Train models, save the world, get paid. Captain Planet would be proud. 🌍❤️
+
+### 🎓 Learning = Earning
+
+- **All the Cool Kids Are Doing It**: Jump on board with AI enthusiasts, data scientists, and the curious cats of Gen Z. Whether you’re a seasoned pro or just AI-curious, there’s room for everyone.
+
+- **Expand Your Mind and Wallet**: Every model you train helps solve real-world problems, from cracking climate change to revolutionizing medicine. And yeah, you get rewarded for it. Knowledge is power, and now, it’s also profit. 📚➡️💸
+
+### 🎉 How It Works
+
+1. **Donwload the .exe**: Grab your digital gear and download our Proof of Computing .exe. It’s like getting a backstage pass to the AI world.
+
+2. **Select Your Mission**: Choose which AI model you wanna help train. From detecting cute cats online to predicting the next big TikTok trend, we’ve got it all.
+
+3. **Let the Games Begin**: Set your computer to work. Go binge-watch your fave series, and let your PC do its thing.
+
+4. **Rewards Galore**: Done training? BOOM! Rewards land straight into your account. It’s like finding money in your other jeans, but way cooler.
+
+### 🌈 The Real MVPs
+
+At the end of the day, it’s not just about making bank. It’s about making a difference. By contributing your computing power, you're part of something bigger – a community of do-gooders, dreamers, and data crunchers making the digital world a better place.
+
+So, what are you waiting for? Join us, get smart, get paid, and let’s make the internet awesome together. 🚀👾
+
+### 💌 Holla at Us
+
+Got questions, suggestions, or just wanna chat about the meaning of life? Slide into our DMs. Let’s make magic happen together.
+
+Let’s get this computational party started! 🎉💻
