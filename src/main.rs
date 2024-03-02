@@ -31,11 +31,9 @@ fn sign(message: &String) -> Vec<u8> {
 
     // Convert the private key and public key to PEM format and save them
     let private_key_pem = ec_key.private_key_to_pem().unwrap();
-    let public_key_pem = ec_key.public_key_to_pem().unwrap();
-    std::fs::write("private_key.pem", &private_key_pem).expect("Unable to save private key");
-    std::fs::write("public_key.pem", &public_key_pem).expect("Unable to save public key");
+    std::fs::write("my_keys/private_key.pem", &private_key_pem).expect("Unable to save private key");
 
-    println!("Signature and keys have been successfully generated and saved.");
+    println!("Signature and key have been successfully generated and saved.");
 
     signature // Return the signature
 }
