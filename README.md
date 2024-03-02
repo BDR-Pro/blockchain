@@ -114,6 +114,7 @@ Wanna dive into the wild world of crypto donations, onion servers, and making ba
 #### 1. **Give Back to Get Ahead** 🎗️
 
 - Wanna train your model? Cool, but let's not forget the little guys. Pledge **10% of today's reward** to the science research labs on the blockchain. It's like tipping your barista, but for brainiacs.
+- The donation percentage, such as **10%**, varies based on the **teraFLOPs** required for successful mining operations.
 - Check out the list of eligible labs and make your donation. Remember, karma's a boomerang – what goes around, comes around!
 
 #### 2. **Set Up Your Secret Lair** 🧅
