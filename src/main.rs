@@ -6,11 +6,45 @@
 // serde_json = "1.0"
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Sha256, Digest};
 use openssl::ec::{EcGroup, EcKey};
 use openssl::nid::Nid;
 use openssl::pkey::PKey;
 use openssl::sign::{Signer, Verifier};
+use std::fs::{self, DirBuilder};
+use std::path::Path;
+use std::path::PathBuf;
+
+fn get_block_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn std::error::Error>> {
+    // Read the file to a string
+    let data = fs::read_to_string(path)?;
+
+    // Parse the string as JSON
+    let json: Value = serde_json::from_str(&data)?;
+
+    // Access the "block_hash" field
+    let block_hash = json
+        .get("block_hash")
+        .ok_or("The key 'block_hash' does not exist")?
+        .as_str()
+        .ok_or("The value for 'block_hash' is not a string")?
+        .to_string();
+
+    Ok(block_hash)
+}
+
+fn count_files_in_folder<P: AsRef<Path>>(path: P) -> std::io::Result<usize> {
+    let mut count = 0;
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        if entry.file_type()?.is_file() {
+            count += 1;
+        }
+    }
+    Ok(count)
+}
+
 
 fn sign(message: &String) -> Vec<u8> {
     // Generate an EC key pair
@@ -31,7 +65,21 @@ fn sign(message: &String) -> Vec<u8> {
 
     // Convert the private key and public key to PEM format and save them
     let private_key_pem = ec_key.private_key_to_pem().unwrap();
-    std::fs::write("my_keys/private_key.pem", &private_key_pem).expect("Unable to save private key");
+
+    // Define the directory and file paths
+    let dir_path = Path::new("my_keys");
+    let file_path = dir_path.join(format!("private_key_{}.pem", Utc::now().timestamp()));
+
+    // Create the directory if it does not exist
+    if !dir_path.exists() {
+        DirBuilder::new()
+            .recursive(true) // This option will create all required parent directories as well
+            .create(dir_path)
+            .expect("Unable to create directory");
+    }
+
+    // Write the private key to the file
+    fs::write(&file_path, &private_key_pem).expect("Unable to save private key");
 
     println!("Signature and key have been successfully generated and saved.");
 
@@ -52,7 +100,9 @@ struct Block {
 
 impl Block {
     // This function must return a Result containing the Block, adjust its signature and fix implementation
-    fn new(data: String, previous_hash: String, block_number:u64 , reward:u64) -> Result<Block, &'static str> {
+    fn new(data: String, reward:u64) -> Result<Block, &'static str> {
+        let block_number: u64 = count_files_in_folder("my_blocks").unwrap() as u64; // Assuming block numbers start from 0
+        let previous_hash: String = get_block_hash_from_file(format!("my_blocks/{}.json", block_number - 1)).unwrap_or("0".to_string());
         let timestamp: i64 = Utc::now().timestamp();
         let mut contents: String = format!("{}:{}:{}:{}:{}", timestamp, &data, &previous_hash, &block_number, &reward);
         let mut hasher = Sha256::new();
@@ -86,8 +136,7 @@ struct Blockchain {
 impl Blockchain {
     fn new() -> Self {
         // Handle the Result returned by Block::new using unwrap or expect
-        let genesis_block = Block::new("Genesis Block".to_string(),
-         "".to_string(),0,28*28).unwrap();
+        let genesis_block = Block::new("Genesis Block".to_string(),28*28).unwrap();    
         Blockchain {
             chain: vec![genesis_block],
         }
@@ -95,22 +144,44 @@ impl Blockchain {
     fn calculate_reward(block_number: u64) -> u64 {
         let reward: u64 = 28*28;
         reward >> (block_number / 2^16)
-    }
-    // This function must handle the Result type returned by Block::new
+        
+    }   
     fn add_block(&mut self, data: String) -> Result<(), &'static str> {
-        let previous_hash: String = self.chain.last().ok_or("Chain should have at least one block")?.block_hash.clone();
-        let block_number: u64 = self.chain.len() as u64;
-        let reward =Self::calculate_reward(block_number);
-        let new_block: Block = Block::new(data, previous_hash, reward , block_number)?;
+
+        
+        let block_number: u64 = self.chain.len() as u64; // Assuming block numbers start from 0
+        let reward = Self::calculate_reward(block_number); // Assuming this is implemented elsewhere
+        let new_block: Block = Block::new(data, reward)
+            .map_err(|_| "Failed to create new block")?;
+        
         self.chain.push(new_block);
+
+        // Serialize the new block to a JSON string
+        let json_str = serde_json::to_string(&self.chain.last().unwrap()) // It's safe to unwrap here since we just added a block
+            .map_err(|_| "Failed to serialize block")?;
+
+        // Construct the file path using PathBuf
+        let mut file_path = PathBuf::from("my_blocks");
+        file_path.push(format!("{}.json", block_number)); // Using format! macro for filename
+
+        // Ensure the directory exists
+        DirBuilder::new()
+            .recursive(true)
+            .create(file_path.parent().ok_or("Failed to get parent directory")?)
+            .map_err(|_| "Failed to create directory")?;
+
+        // Write the JSON string to the file
+        fs::write(&file_path, json_str).map_err(|_| "Failed to write block to file")?;
+
         Ok(())
     }
+
 }
 
 fn main() {
     let mut blockchain = Blockchain::new();
-    blockchain.add_block("Block 1 Data".to_string()).unwrap();
-    blockchain.add_block("Block 2 Data".to_string()).unwrap();
+    blockchain.add_block("Block Transactions Data".to_string()).unwrap();
+    blockchain.add_block("Block Transactions Data".to_string()).unwrap();
 
     println!("Blockchain: {:?}", blockchain);
 }
