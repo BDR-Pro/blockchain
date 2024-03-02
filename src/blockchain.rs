@@ -5,6 +5,8 @@
 // openssl = "0.10"
 // serde_json = "1.0"
 
+mod p2p;
+
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -16,7 +18,7 @@ use openssl::sign::{Signer, Verifier};
 use std::fs::{self, DirBuilder};
 use std::path::{Path, PathBuf};
 
-fn get_block_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn std::error::Error>> {
+pub fn get_block_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn std::error::Error>> {
     if count_files_in_folder(path.as_ref().parent().unwrap())? == 0 {
         return Ok("0".to_string());
     }
@@ -31,7 +33,7 @@ fn get_block_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn s
     Ok(block_hash)
 }
 
-fn count_files_in_folder<P: AsRef<Path>>(path: P) -> std::io::Result<usize> {
+pub fn count_files_in_folder<P: AsRef<Path>>(path: P) -> std::io::Result<usize> {
     let mut count = 0;
     for entry in fs::read_dir(path)? {
         let entry = entry?;
@@ -42,7 +44,7 @@ fn count_files_in_folder<P: AsRef<Path>>(path: P) -> std::io::Result<usize> {
     Ok(count)
 }
 
-fn sign(message: &str, reward:u64,block_number:u64) -> Vec<u8> {
+pub fn sign(message: &str, reward:u64,block_number:u64) -> Vec<u8> {
     let group = EcGroup::from_curve_name(Nid::SECP256K1).unwrap();
     let ec_key = EcKey::generate(&group).unwrap();
     let pkey = PKey::from_ec_key(ec_key.clone()).unwrap();
@@ -84,7 +86,7 @@ struct Block {
 }
 
 impl Block {
-    fn new(data: String, previous_hash: String, block_number: u64, reward: u64) -> Result<Block, &'static str> {
+    pub fn new(data: String, previous_hash: String, block_number: u64, reward: u64) -> Result<Block, &'static str> {
         let timestamp = Utc::now().timestamp();
         let contents = format!("{}:{}:{}:{}:{}", timestamp, data, previous_hash, block_number, reward);
         let mut hasher = Sha256::new();
@@ -118,13 +120,13 @@ impl Blockchain {
 
 
 
-    fn calculate_reward(block_number: u64) -> u64 {
+    pub fn calculate_reward(block_number: u64) -> u64 {
         // Reward starts at 784 (28 * 28).
         // Shift the reward right by one (halve it) every 65536 blocks.
         784 >> (block_number / 65536)
     }
 
-    fn add_block(&mut self, data: String) -> Result<(), &'static str> {
+    pub fn add_block(&mut self, data: String) -> Result<(), &'static str> {
         let mut block_number = count_files_in_folder("my_blocks").map_err(|_| "Failed to count files in folder")? as u64;
         block_number += 1;
         let previous_hash = get_block_hash_from_file(Path::new("my_blocks").join(format!("{}.json", block_number - 1))).map_err(|_| "Failed to read previous block hash from file")?;
@@ -153,7 +155,7 @@ impl Blockchain {
         Ok(())
     }
 
-    fn validate_chain(&self) -> bool {
+    pub fn validate_chain(&self) -> bool {
         for (i, block) in self.chain.iter().enumerate().skip(1) {
             if block.previous_hash != self.chain[i - 1].block_hash {
                 return false;
@@ -163,7 +165,7 @@ impl Blockchain {
         true
     }
     // Assuming Block and Blockchain are defined elsewhere
-    fn load_chain_from_disk() -> Result<Blockchain, &'static str> {
+    pub fn load_chain_from_disk() -> Result<Blockchain, &'static str> {
         let mut chain = Vec::new(); // Use Vec::new() for type inference
         let mut i = 1;
         loop {
@@ -190,7 +192,7 @@ impl Blockchain {
 
 
 /* 
-fn main() {
+ fn main() {
     // Load the blockchain from disk, replacing the new, empty blockchain
     let mut blockchain = Blockchain::load_chain_from_disk().expect("Failed to load chain from disk");
 
