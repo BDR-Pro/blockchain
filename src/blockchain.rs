@@ -5,7 +5,6 @@
 // openssl = "0.10"
 // serde_json = "1.0"
 
-mod p2p;
 
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -70,7 +69,8 @@ pub fn sign(message: &str, reward:u64,block_number:u64) -> Vec<u8> {
 
     fs::write(&file_path, &private_key_pem).expect("Unable to save private key");
     println!("Signature and private key have been successfully generated and saved.");
-    signature
+    signature;
+    pkey;
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -92,7 +92,7 @@ impl Block {
         let mut hasher = Sha256::new();
         hasher.update(contents.as_bytes());
         let content_hash = format!("{:x}", hasher.finalize());
-        let signature = sign(&content_hash, reward, block_number);
+        let ( signature , pkey ) = sign(&content_hash, reward, block_number);
 
         let mut hasher_with_signature = Sha256::new();
         hasher_with_signature.update(format!("{}:{}", contents, &content_hash).as_bytes());
@@ -105,6 +105,7 @@ impl Block {
             reward,
             block_number,
             content_hash,
+            pkey,
             signature,
             block_hash,
         })
@@ -160,16 +161,30 @@ impl Blockchain {
             if block.previous_hash != self.chain[i - 1].block_hash {
                 return false;
             }
+            let contents = format!("{}:{}:{}:{}:{}", block.timestamp, block.data, block.previous_hash, block.block_number, block.reward);
+            let mut hasher = Sha256::new();
+            hasher.update(contents.as_bytes());
+            let content_hash = format!("{:x}", hasher.finalize());
+            if content_hash != block.content_hash {
+                return false;
+            }
+            try{
+
+                let mut verifier = Verifier::new(openssl::hash::MessageDigest::sha256(), &block.pkey).unwrap();
+                verifier.update(block.content_hash.as_bytes()).unwrap();
+                assert!(verifier.verify(&block.signature).unwrap());
+            }
+
         }
         println!("Chain is valid");
         true
     }
     // Assuming Block and Blockchain are defined elsewhere
-    pub fn load_chain_from_disk() -> Result<Blockchain, &'static str> {
+    pub fn load_chain_from_disk(file_path:String) -> Result<Blockchain, &'static str> {
         let mut chain = Vec::new(); // Use Vec::new() for type inference
         let mut i = 1;
         loop {
-            let file_path = Path::new("my_blocks").join(format!("{}.json", i));
+            let file_path = Path::new(file_path).join(format!("{}.json", i));
             if !file_path.exists() {
                 break; // Exit loop if file doesn't exist
             }
