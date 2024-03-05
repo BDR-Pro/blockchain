@@ -17,6 +17,7 @@ fn main() {
 }
 
 fn mine() -> Result<(), String> {
+    println!("Mining notebook: {}", NOTEBOOK_FILE);
     let file_content = fs::read_to_string(NOTEBOOK_FILE)
         .map_err(|e| format!("Failed to read notebook file: {}", e))?;
 
