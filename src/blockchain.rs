@@ -81,6 +81,7 @@ struct Block {
     reward: u64,
     block_number: u64,
     content_hash: String,
+    pkey: PKey<openssl::pkey::Private>,
     signature: Vec<u8>,
     block_hash: String,
 }
