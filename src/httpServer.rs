@@ -10,8 +10,11 @@ use zip::ZipArchive;
 
 pub fn start_tor() -> Result<(), Box<dyn Error>>{
   
-    let tor_installed = is_tor_installed_unix();
-
+    let tor_installed = if cfg!(target_os = "windows") {
+        is_tor_installed_windows()
+    } else {
+        is_tor_installed_unix()
+    };
     if !tor_installed {
         println!("Tor is not installed. Installing...");
         install_tor();

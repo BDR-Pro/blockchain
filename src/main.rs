@@ -1,77 +1,117 @@
 use serde_json::Value;
+use sha2::digest::Output;
 use std::fs;
-use std::process::{Command, Stdio};
-use std::time::Instant;
+use std::process::Command;
+use std::fs::OpenOptions;
+use std::io::Write;
 
-const NOTEBOOK_FILE: &str = "new_task.ipynb";
-const TEMP_PYTHON_FILE: &str = "temp_cell.py";
-const PYTHON_COMMAND: &str = "python";
+const NOTEBOOK_FILE: &str = "new_task.ipynb"; // Replace with your notebook filename
+const PYTHON_COMMAND: &str = "python"; // Or "python3" depending on your system
 const CODE_CELL_TYPE: &str = "code";
-const TERAFLOP_INDICATOR: &str = "teraFLOP:";
+const COMBINED_SCRIPT_FILE: &str = "task.py";
+const OUTPUT_FILE: &str = "output.txt";
 
 fn main() {
-    match mine() {
-        Ok(()) => println!("Mining completed successfully."),
-        Err(e) => eprintln!("Mining failed: {}", e),
+    /*
+    match run_notebook() {
+        Ok(()) => println!("Notebook processed and output saved successfully."),
+        Err(e) => eprintln!("Failed to process notebook: {}", e),
     }
+    
+    let  _ = get_teraflop();
+  
+    match backup_tasks() {
+        Ok(()) => println!("Backup tasks successfully."),
+        Err(e) => eprintln!("Failed to backup tasks: {}", e),
+    }
+       */
 }
 
-fn mine() -> Result<(), String> {
-    println!("Mining notebook: {}", NOTEBOOK_FILE);
+fn backup_tasks() -> Result<(), Box<dyn std::error::Error>> {
+    //move to the backup folder make the folder if it does not exist
+    let notebook = fs::read("new_task.ipynb")?;
+    fs::create_dir_all("backup")?;
+    // uuid 
+    let uuid = uuid::Uuid::new_v4();
+    let backup_file = format!("backup/{}.ipynb", uuid);
+    fs::write(backup_file, notebook)?;
+    let output = fs::read("output.txt")?;
+    let backup_output_file = format!("backup/{}.txt", uuid);
+    fs::write(backup_output_file, output)?;
+
+    Ok(())
+}
+
+
+fn get_teraflop() -> Result<f64, Box<dyn std::error::Error>> {
+    let file = fs::read_to_string(OUTPUT_FILE)?;
+    let lines: Vec<&str> = file.lines().collect();
+    let mut teraflop: f64 = 0.0;
+
+    // Ensure the directory exists
+    fs::create_dir_all("my_flops")?;
+
+    for line in lines {
+        if let Some(prefix) = line.strip_prefix("teraFLOP:") {
+            teraflop = prefix.trim().parse()?;
+            let mut file = OpenOptions::new()
+                .write(true)
+                .append(true)
+                .create(true)
+                .open("my_flops/teraFLOP.txt")?;
+            writeln!(file, "{}", teraflop)?; // This should now work correctly
+        }
+    }
+
+    Ok(teraflop)
+}
+
+fn run_notebook() -> Result<(), String> {
     let file_content = fs::read_to_string(NOTEBOOK_FILE)
         .map_err(|e| format!("Failed to read notebook file: {}", e))?;
 
     let notebook: Value = serde_json::from_str(&file_content)
         .map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
-    let mut total_time = 0;
-    let mut total_tera_flops = 0.0;
+    let mut combined_code = String::new();
 
     if let Some(cells) = notebook["cells"].as_array() {
         for cell in cells {
             if cell["cell_type"] == CODE_CELL_TYPE {
-                let source = cell["source"].as_str().unwrap_or_default();
-                fs::write(TEMP_PYTHON_FILE, source)
-                    .map_err(|e| format!("Failed to write Python file: {}", e))?;
-
-                let (time, tera_flops) = execute_python_cell()?;
-                total_time += time;
-                total_tera_flops += tera_flops;
+                if let Some(source) = cell["source"].as_array() {
+                    for line in source {
+                        if let Some(code_line) = line.as_str() {
+                            combined_code.push_str(code_line);
+                        }
+                        combined_code.push('\n');
+                    }
+                }
             }
         }
+    } else {
+        return Err("No cells found in notebook".to_string());
     }
 
-    println!("Total time: {} seconds", total_time);
-    println!("Total teraFLOPs: {}", total_tera_flops);
-    Ok(())
-}
+    // Save the combined Python code to a file
+    fs::write(COMBINED_SCRIPT_FILE, &combined_code)
+        .map_err(|e| format!("Failed to write combined Python script: {}", e))?;
 
-fn execute_python_cell() -> Result<(u64, f64), String> {
-    let start = Instant::now();
+    // Execute the combined Python script and capture its output
     let output = Command::new(PYTHON_COMMAND)
-        .arg(TEMP_PYTHON_FILE)
-        .stdout(Stdio::piped())
+        .arg(COMBINED_SCRIPT_FILE)
         .output()
-        .map_err(|e| format!("Failed to execute Python script: {}", e))?;
+        .map_err(|e| format!("Failed to execute combined Python script: {}", e))?;
 
-    let duration = start.elapsed().as_secs();
-    let output_str = String::from_utf8_lossy(&output.stdout);
+    // Write the output (stdout and stderr) to the output file
+    fs::write(
+        OUTPUT_FILE,
+        format!(
+            "stdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        ),
+    )
+    .map_err(|e| format!("Failed to write output to file: {}", e))?;
 
-    let tera_flops = parse_tera_flops(&output_str)?;
-    Ok((duration, tera_flops))
-}
-
-fn parse_tera_flops(output: &str) -> Result<f64, String> {
-    output
-        .split_whitespace()
-        .collect::<Vec<&str>>()
-        .windows(2)
-        .find_map(|window| {
-            if window[0] == TERAFLOP_INDICATOR {
-                window[1].parse().ok()
-            } else {
-                None
-            }
-        })
-        .ok_or_else(|| "teraFLOP value not found in output".to_string())
+    Ok(())
 }

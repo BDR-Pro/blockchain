@@ -1,13 +1,17 @@
 use std::fs;
 use rand::Rng;
 use reqwest;
-use Tor_Traffic_Router::{is_tor_installed_unix, install_tor};
+use Tor_Traffic_Router::{is_tor_installed_unix, install_tor,is_tor_installed_windows};
 use zip::ZipArchive;
 use blockchain::{count_files_in_folder, validate_chain,load_chain_from_disk};
 
 pub fn tor_proxy(){
-    let tor_installed =  is_tor_installed_unix();
-
+    
+    let tor_installed = if cfg!(target_os = "windows") {
+        is_tor_installed_windows()
+    } else {
+        is_tor_installed_unix()
+    };
     if !tor_installed {
         println!("Tor is not installed. Installing...");
         install_tor();
