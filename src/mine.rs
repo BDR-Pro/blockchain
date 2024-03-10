@@ -5,11 +5,11 @@ use std::process::Command;
 use std::fs::OpenOptions;
 use std::io::Write;
 
-const NOTEBOOK_FILE: &str = "new_task.ipynb"; // Replace with your notebook filename
+const NOTEBOOK_FILE: &str = "python/new_task.ipynb"; // Replace with your notebook filename
 const PYTHON_COMMAND: &str = "python"; // Or "python3" depending on your system
 const CODE_CELL_TYPE: &str = "code";
-const COMBINED_SCRIPT_FILE: &str = "task.py";
-const OUTPUT_FILE: &str = "output.txt";
+const COMBINED_SCRIPT_FILE: &str = "python/task.py";
+const OUTPUT_FILE: &str = "python/output.txt";
   
 //EXAMPLE CODE 
 fn main() {

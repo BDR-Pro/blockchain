@@ -38,7 +38,8 @@
     - [🐍 Python Package Installation](#4-install-the-required-packages)
     - [🔐 OpenSSL Configuration for Rust](#5-openssl-dance)
 13. [🎉 Conclusion: Becoming a Rustacean-Crypto-Wizard](#-boom-youre-now-a-rustacean-crypto-wizard)
-14. [💌 Contact Information](#-holla-at-us)
+14. [Big Update #1](#Big-Update-#1)
+15. [💌 Contact Information](#-holla-at-us)
 
 Yo, what’s up, fam? Welcome to the dopest blockchain on the block - **Alpha Centauri**. 🌌 Forget all that old-school balance and address nonsense. We’re here to flip the script with our unique **banknotes vibe** - think exclusive signed rewards you can flex with your private key. 🗝️💰
 
@@ -397,6 +398,41 @@ If Rust starts asking where OpenSSL is at (like, "Hey, I need those secure vibes
 ## 🎉 Boom! You're Now a Rustacean-Crypto-Wizard!🧙🏼‍♂️🔮🎩🪄✨
 
 Congrats! You've just set up **Alpha centuri**. Dive into the code, make some noise, and build something that'll make the blockchain jealous.
+
+## Big Update #1
+
+>**1** add blockchain_maker as external crate
+
+```toml
+[dependencies]
+blockchain_maker = 1.1.0
+```
+
+>**2** add webSocket to the project
+
+```toml
+[dependencies]
+websocket = "0.22.0"
+```
+
+>**3** add cudaa.py to the project
+as another way to calculate teraflops
+
+```python
+
+# Define the CUDA kernel for matrix multiplication
+@cuda.jit
+def matmul(A, B, C):
+    row, col = cuda.grid(2)  # Get the 2D thread indices
+    if row < C.shape[0] and col < C.shape[1]:
+        tmp = 0.0
+        for k in range(A.shape[1]):
+            tmp += A[row, k] * B[k, col]
+        C[row, col] = tmp
+
+```
+
+>**4** add requirements.ipynb to the project just run it to install the required packages
 
 ### 💌 Holla at Us
 
