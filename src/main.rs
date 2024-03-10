@@ -1,6 +1,6 @@
-use futures_util::Stream;
 use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
+use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::protocol::Message;
 use futures_util::StreamExt; // Ensure you have this for using 'next' and other stream combinators
 use tokio::fs::File as TokioFile;
@@ -10,8 +10,24 @@ use blockchain_maker::Blockchain;
 use tokio::task;
 use futures_util::SinkExt;
 use tar;
-use tokio_tungstenite::tungstenite::WebSocket;
 
+
+async fn ping_port_8888() -> Result<(), Box<dyn std::error::Error>> {
+    let (mut ws_stream, _) = connect_async("ws://localhost:8888").await?;
+
+    // Send a ping message
+    ws_stream.send(Message::Ping(vec![])).await?;
+
+    // Wait for a pong message or ignore it, depending on your protocol
+    if let Some(message) = ws_stream.next().await {
+        match message? {
+            Message::Pong(_) => println!("Received pong from port 8888"),
+            _ => println!("Unexpected message type from port 8888"),
+        }
+    }
+
+    Ok(())
+}
 
 async fn save_file(bin: Vec<u8>) -> Result<(), std::io::Error> {
     let mut file = TokioFile::create("/temp_blocks.tar.gz").await?;
@@ -89,7 +105,11 @@ async fn main() -> tokio::io::Result<()> {
 async fn handle_connection(stream: tokio::net::TcpStream) {
     let ws_stream = accept_async(stream).await.expect("Error during the websocket handshake");
     let (mut write, mut read) = ws_stream.split();
-    
+        // Send a ping to port 8888 each time a new connection is established
+        if let Err(e) = ping_port_8888().await {
+            eprintln!("Error pinging port 8888: {}", e);
+        }
+
     // Initial message to the client
     write.send(Message::Text("Hello, World!".into())).await.expect("Error sending message");
 
