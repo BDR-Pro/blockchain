@@ -434,6 +434,33 @@ def matmul(A, B, C):
 
 >**4** add requirements.ipynb to the project just run it to install the required packages
 
+```bash
+
+python3 -m pip install -r requirements.txt
+
+```
+
+>**5** add ping.py to the project to check the connection between the server and the client
+
+```python
+
+
+async def test_ws():
+    uri = "ws://localhost:8080"
+    async with websockets.connect(uri) as websocket:
+        # Sending a "ping" message
+        await websocket.send("ping")
+        print("> ping")
+
+        # Waiting for a response
+        response = await websocket.recv()
+        print(f"< {response}")
+
+
+```
+
+![alt text](image.png)
+
 ### 💌 Holla at Us
 
 Got questions, suggestions, or just wanna chat about the meaning of life? Slide into our DMs. Let’s make magic happen together.
