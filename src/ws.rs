@@ -9,11 +9,12 @@ use blockchain_maker::count_files_in_folder;
 use blockchain_maker::Blockchain;
 use tokio::task;
 use futures_util::SinkExt;
-use tar;
 
 
-async fn ping_port_8888() -> Result<(), Box<dyn std::error::Error>> {
-    let (mut ws_stream, _) = connect_async("ws://localhost:8888").await?;
+const ONION: &str = "ws://3hdwjjn2kor75ribq7xiws5hzuh4jwg7llinlngrfrpklqstramqrvqd.onion:8888";
+
+async fn ping_onion_dns() -> Result<(), Box<dyn std::error::Error>> {
+    let (mut ws_stream, _) = connect_async(ONION).await?;
 
     // Send a ping message
     ws_stream.send(Message::Ping(vec![])).await?;
@@ -21,8 +22,8 @@ async fn ping_port_8888() -> Result<(), Box<dyn std::error::Error>> {
     // Wait for a pong message or ignore it, depending on your protocol
     if let Some(message) = ws_stream.next().await {
         match message? {
-            Message::Pong(_) => println!("Received pong from port 8888"),
-            _ => println!("Unexpected message type from port 8888"),
+            Message::Pong(_) => println!("Received pong from onion dns {}", ONION),
+            _ => println!("Unexpected message type from onion dns")
         }
     }
 
@@ -106,7 +107,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     let ws_stream = accept_async(stream).await.expect("Error during the websocket handshake");
     let (mut write, mut read) = ws_stream.split();
         // Send a ping to port 8888 each time a new connection is established
-        if let Err(e) = ping_port_8888().await {
+        if let Err(e) = ping_onion_dns().await {
             eprintln!("Error pinging port 8888: {}", e);
         }
 
