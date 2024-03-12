@@ -10,6 +10,7 @@ use blockchain_maker::Blockchain;
 use tokio::task;
 use futures_util::SinkExt;
 use tar;
+pub mod nodes_contacting;
 
 
 async fn ping_port_8888() -> Result<(), Box<dyn std::error::Error>> {
@@ -88,6 +89,61 @@ async fn unzip_file() -> Result<(), std::io::Error> {
     Ok(())
 }
 
+pub async fn send_a_message(message:String,receiver:String,type_message:i16) -> String {
+    // Assuming Tor is now installed and configured to listen on the default SOCKS5 port
+    nodes_contacting::tor_proxy();
+    let client = Client::builder().proxy(proxy).build()?;
+
+    let (mut ws_stream, _) = connect_async(format!("ws://{receiver}:8080")).await?;
+    
+    // Send a text message
+
+    if type_message == 1 {
+        ws_stream.send(Message::Text(message.into())).await?;
+        // Wait for a response
+        if let Some(message) = ws_stream.next().await {
+            match message? {
+                Message::Text(text) => println!("Received text message: {}", text),
+                _ => println!("Unexpected message type"),
+            }
+            text
+        }
+    }
+    // Send a binary message
+    else if type_message == 2 {
+        ws_stream.send(Message::Binary(message.into())).await?;
+        // Wait for a response
+        if let Some(message) = ws_stream.next().await {
+            match message? {
+                Message::Text(text) => println!("Received text message: {}", text),
+                _ => println!("Unexpected message type"),
+            }
+            text
+        }
+
+    }
+    // Send a ping message
+    else if type_message == 3 {
+        ws_stream.send(Message::Ping(message.into())).await?;
+        // Wait for a pong message
+        if let Some(message) = ws_stream.next().await {
+            match message? {
+                Message::Pong(_) => println!("Received pong"),
+                _ => println!("Unexpected message type"),
+            }
+            return "pong";
+        }
+
+
+    }
+    else {
+        println!("Invalid message type");
+    }
+
+
+
+    Ok(())
+}
 
 #[tokio::main]
 async fn main() -> tokio::io::Result<()> {
