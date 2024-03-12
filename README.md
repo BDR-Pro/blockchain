@@ -2,44 +2,65 @@
 
 ## Table of Contents
 
-1. [🚀 Introduction: Alpha Centauri Blockchain](#-alpha-centauri-blockchain-next-gen-privacy-is-here-)
-2. [🌊 Getting Your Feet Wet](#getting-your-feet-wet-)
-   - [🔧 Setup Real Quick](#setup-real-quick)
-   - [🎲 Let's Roll](#lets-roll-)
-3. [📱 What's This? Understanding the Platform](#whats-this-)
-   - [🧠 Proof of Computing](#proof-of-computing)
-   - [👻 Keep it on the DL](#keep-it-on-the-dl)
-   - [💰 Cash Rules](#cash-rules)
-4. [🕵️‍♀️ Sneak Peek Code](#sneak-peek-code-)
-   - [🤿 Dive Deeper into the Code](#dive-deeper-)
-5. [💥 Understanding the Reward System](#-reward-system)
-   - [💸 Yo, What's Up With The 1 Block Reward?](#yo-whats-up-with-the-1-block-reward-)
-   - [🕒 Time Travel But For Crypto](#time-travel-but-for-crypto-)
-   - [💰 Treasure Hunt: Total Circulation](#treasure-hunt-total-circulation-)
-6. [📢 Holla at Us: Getting Involved](#holla-at-us-)
-7. [🌈 The Trustless System Explained](#-how-the-trustless-system-works-)
-   - [📋 The Ultimate To-Do List](#-the-ultimate-to-do-list)
-8. [💪🤖 Proof of Computing: Rewards for Your AI Muscles](#-proof-of-computing-get-rewarded-for-flexing-your-ai-muscles-)
-   - [🧠 Train & Gain](#-train--gain)
-   - [🎓 Learning = Earning](#learning--earning)
-   - [🎉 How It Works: The Guide](#-how-it-works)
-9. [🚀✨ How to Calculate TeraFLOPs Like a Pro](#how-to-calculate-teraflops-like-a-gen-z-pro-)
-   - [🤔💥 What's a TeraFLOP?](#whats-a-teraflop-you-ask-)
-   - [📊👀 Getting the Details](#getting-the-deets-details-obvi)
-10. [📈🔥 Train Your Models Like a Boss](#-train-your-models-like-a-boss-)
-    - [💎 Unleash The Power of Your Data](#-unleash-the-power-of-your-data)
-    - [🤖 What's the Deal with Data Science?](#-whats-the-deal)
-    - [💻 Features That Will Amaze](#-features-that-will-make-you-go-woah)
-11. [📁 Project Directory Structure](#directories)
-12. [🛠 Installation and Setup Guide](#-installation-guide-the-gen-z-way)
-    - [🔑 OpenSSL: The Gatekeeper](#1-getting-openssl-the-gatekeeper)
-    - [🦀 Let's Get Rusty](#2-lets-get-rusty)
-    - [🏗 Build and Run](#3-build-and-run)
-    - [🐍 Python Package Installation](#4-install-the-required-packages)
-    - [🔐 OpenSSL Configuration for Rust](#5-openssl-dance)
-13. [🎉 Conclusion: Becoming a Rustacean-Crypto-Wizard](#-boom-youre-now-a-rustacean-crypto-wizard)
-14. [Big Update #1](#Big-Update-#1)
-15. [💌 Contact Information](#-holla-at-us)
+- [🚀 Alpha Centauri Blockchain: Next-Gen Privacy is Here! 🚀](#-alpha-centauri-blockchain-next-gen-privacy-is-here-)
+  - [Table of Contents](#table-of-contents)
+  - [Getting Your Feet Wet 🌊](#getting-your-feet-wet-)
+    - [Setup Real Quick](#setup-real-quick)
+      - [Let's Roll 🎲](#lets-roll-)
+  - [What's this? 📱](#whats-this-)
+    - [Proof of Computing](#proof-of-computing)
+    - [Keep it on the DL](#keep-it-on-the-dl)
+    - [Cash Rules](#cash-rules)
+  - [Sneak Peek Code 🕵️‍♀️](#sneak-peek-code-️️)
+    - [Dive Deeper 🤿](#dive-deeper-)
+  - [💥 Reward System🚀](#-reward-system)
+  - [Yo, What's Up With The 1 Block Reward? 🤔💸](#yo-whats-up-with-the-1-block-reward-)
+  - [Time Travel But For Crypto 🚀🕒](#time-travel-but-for-crypto-)
+  - [Treasure Hunt: Total Circulation 🏴‍☠️💰](#treasure-hunt-total-circulation-️)
+  - [Wrap It Up, Will Ya? 🎁](#wrap-it-up-will-ya-)
+  - [Holla at Us 📢](#holla-at-us-)
+  - [🚀 How The Trustless System works! 🌈](#-how-the-trustless-system-works-)
+    - [Yo, Future Blockchain Moguls! 👾](#yo-future-blockchain-moguls-)
+    - [📋 The Ultimate To-Do List](#-the-ultimate-to-do-list)
+      - [1. **Give Back to Get Ahead** 🎗️](#1-give-back-to-get-ahead-️)
+      - [2. **Set Up Your Secret Lair** 🧅](#2-set-up-your-secret-lair-)
+      - [3. **Link Up and Lock Down** 🔗🔒](#3-link-up-and-lock-down-)
+      - [4. **Receive the Digits** 💰](#4-receive-the-digits-)
+      - [5. **Make It Rain (New Funds, Who Dis?)** 💳](#5-make-it-rain-new-funds-who-dis-)
+      - [6. **Seal the Deal** ✅](#6-seal-the-deal-)
+    - [🌟 Conclusion](#-conclusion)
+  - [🚀 Proof of Computing: Get Rewarded for Flexing Your AI Muscles! 💪🤖](#-proof-of-computing-get-rewarded-for-flexing-your-ai-muscles-)
+    - [🧠 Train \& Gain](#-train--gain)
+    - [🎓 Learning = Earning](#-learning--earning)
+    - [🎉 How It Works](#-how-it-works)
+    - [🌈 The Real MVPs](#-the-real-mvps)
+  - [How to Calculate TeraFLOPs Like a Gen Z Pro 🚀✨](#how-to-calculate-teraflops-like-a-gen-z-pro-)
+  - [What's a TeraFLOP, You Ask? 🤔💥](#whats-a-teraflop-you-ask-)
+  - [Getting the Deets (Details, obvi) 📊👀](#getting-the-deets-details-obvi-)
+    - [Step 1: Warm-Up 🏃‍♂️🔥](#step-1-warm-up-️)
+    - [Step 2: The Magic Spell 🧙‍♂️✨](#step-2-the-magic-spell-️)
+    - [Step 3: Flex 💪🌟](#step-3-flex-)
+      - [Example Output](#example-output)
+  - [Pro Tips for True Techies 🎓🚀](#pro-tips-for-true-techies-)
+  - [Conclusion: You're Now a TeraFLOP Titan 🏆✨](#conclusion-youre-now-a-teraflop-titan-)
+    - [🚀 Train Your Models Like a Boss! 📈🔥](#-train-your-models-like-a-boss-)
+  - [💎 Unleash The Power of Your Data](#-unleash-the-power-of-your-data)
+  - [🤖 What's the Deal?](#-whats-the-deal)
+  - [💻 Features That Will Make You Go "Woah!"](#-features-that-will-make-you-go-woah)
+  - [🚀 How to Get Started](#-how-to-get-started)
+  - [Directories](#directories)
+  - [🛠 Installation Guide (The Gen Z Way)](#-installation-guide-the-gen-z-way)
+    - [1. Getting OpenSSL (The Gatekeeper)](#1-getting-openssl-the-gatekeeper)
+    - [2. Let's Get Rusty](#2-lets-get-rusty)
+    - [3. Build and Run](#3-build-and-run)
+    - [4. install the required packages](#4-install-the-required-packages)
+    - [5. OpenSSL Dance](#5-openssl-dance)
+  - [🎉 Boom! You're Now a Rustacean-Crypto-Wizard!🧙🏼‍♂️🔮🎩🪄✨](#-boom-youre-now-a-rustacean-crypto-wizard️)
+  - [Big Update #1](#big-update-1)
+  - [Update **2**](#update-2)
+    - ["WebSquad connects nodes using WebSocket. Ping yourself, check Tor status, and sync with peers listed in 'dns.txt'. Dive into decentralized networking! #WebSquad"](#websquad-connects-nodes-using-websocket-ping-yourself-check-tor-status-and-sync-with-peers-listed-in-dnstxt-dive-into-decentralized-networking-websquad)
+      - ["Connect and vibe with your digital tribe! 🌐 Our 'WebSquad' platform pings via WS, linking you to other cool WS clients. Stay synced, stay connected. #WebSquad #StayLinked"](#connect-and-vibe-with-your-digital-tribe--our-websquad-platform-pings-via-ws-linking-you-to-other-cool-ws-clients-stay-synced-stay-connected-websquad-staylinked)
+    - [💌 Holla at Us](#-holla-at-us)
 
 Yo, what’s up, fam? Welcome to the dopest blockchain on the block - **Alpha Centauri**. 🌌 Forget all that old-school balance and address nonsense. We’re here to flip the script with our unique **banknotes vibe** - think exclusive signed rewards you can flex with your private key. 🗝️💰
 
@@ -460,6 +481,27 @@ async def test_ws():
 ```
 
 ![alt text](image.png)
+
+## Update **2**
+
+![alt text](dns.png)
+
+### "WebSquad connects nodes using WebSocket. Ping yourself, check Tor status, and sync with peers listed in 'dns.txt'. Dive into decentralized networking! #WebSquad"
+
+#### "Connect and vibe with your digital tribe! 🌐 Our 'WebSquad' platform pings via WS, linking you to other cool WS clients. Stay synced, stay connected. #WebSquad #StayLinked"
+
+
+1. **Start Server**: Initialize WebSocket server on port 8888.
+2. **Receive Message**: Await "ping" message from connected clients.
+3. **Read File**:
+   - Open `dns.txt`.
+   - Retrieve the last line (representing the latest DNS entry).
+4. **Respond to Client**:
+   - If received message is "ping", send back the last entry.
+   - On error (e.g., file read error), send an error message.
+5. **Loop**: Continue listening for new messages and clients.
+
+---
 
 ### 💌 Holla at Us
 
