@@ -9,7 +9,7 @@ use blockchain_maker::count_files_in_folder;
 use blockchain_maker::Blockchain;
 use tokio::task;
 use futures_util::SinkExt;
-
+pub mod nodes_contacting;
 
 const ONION: &str = "ws://3hdwjjn2kor75ribq7xiws5hzuh4jwg7llinlngrfrpklqstramqrvqd.onion:8888";
 
