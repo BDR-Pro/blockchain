@@ -1,16 +1,79 @@
 use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
-use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::protocol::Message;
-use futures_util::StreamExt; // Ensure you have this for using 'next' and other stream combinators
+use futures_util::StreamExt; 
 use tokio::fs::File as TokioFile;
-use tokio::io::AsyncWriteExt; // Ensure you have this for using write_all and other AsyncWrite utilities
-use blockchain_maker::count_files_in_folder;
-use blockchain_maker::Blockchain;
+use tokio::io::AsyncWriteExt; 
 use tokio::task;
 use futures_util::SinkExt;
-use crate::ws;
-pub mod nodes_contacting;
+use tokio_tungstenite::WebSocketStream;  
+use tokio_socks::tcp::Socks5Stream;
+use url::Url;  
+use futures_util::io::Error;  
+use tokio::net::TcpStream;  
+use rand::thread_rng;
+use std::fs as file_system;
+use tar::Builder;
+use flate2::Compression;
+use flate2::write::GzEncoder;
+use std::process::Command; 
+use reqwest::Client;
+use reqwest;
+use Tor_Traffic_Router::{is_tor_installed_unix, install_tor,is_tor_installed_windows};
+use blockchain_maker::{Blockchain,count_files_in_folder};
+
+pub fn tor_proxy() -> reqwest::Client{
+    
+    let tor_installed = if cfg!(target_os = "windows") {
+        is_tor_installed_windows()
+    } else {
+        is_tor_installed_unix()
+    };
+    if !tor_installed {
+        println!("Tor is not installed. Installing...");
+        install_tor();
+    } else {
+        println!("Tor is already installed. Proceeding...");
+        // Start Tor
+        Command::new("tor").spawn()?;
+        let proxy = reqwest::Proxy::all("socks5://127.0.0.1:9050")?;
+        let client = Client::builder().proxy(proxy).build()?;
+        
+        return client;
+    }
+
+}
+
+pub async fn download_blockchain() {
+    // Read the contents of the file
+    println!("Downloading the blockchain...");
+    let proxy=tor_proxy();
+    let file_contents = file_system::read_to_string("/nodes/onion.txt")
+        .expect("Failed to read the file");
+
+    // Parse the lines and store them in a vector
+    let lines: Vec<&str> = file_contents.lines().collect();
+
+    // Generate a random index
+    let mut rng = thread_rng();
+    let random_index = rng.gen_range(0..lines.len());
+
+    // Retrieve the line at the random index
+    let mut random_node = lines[random_index];
+
+    // Assuming Tor is now installed and configured to listen on the default SOCKS5 port
+    let blockleng = count_files_in_folder("my_blocks");
+    let my_message = format!("/check?block_number={}",blockleng);
+    println!("Sending a /sync message to {}: {}",random_node ,my_message);
+    send_a_message(my_message,random_node,1);
+
+
+    }
+
+    // Handle the response as needed
+    // ...
+
+
 
 const ONION: &str = "ws://3hdwjjn2kor75ribq7xiws5hzuh4jwg7llinlngrfrpklqstramqrvqd.onion:8888";
 
@@ -30,7 +93,7 @@ async fn connect_via_socks_proxy(target_url: &str) -> Result<WebSocketStream<Soc
 
 async fn ping_onion_dns() -> Result<(), Box<dyn std::error::Error>> {
     //use proxy
-    let proxy=nodes_contacting::tor_proxy();
+    let proxy=tor_proxy();
     // Connect to the onion dns
     match connect_via_socks_proxy(ONION).await {
 
@@ -103,7 +166,7 @@ fn create_blockchain(path:String) -> bool {
     for i in first_block..last_block + 1 {
         let file_name = format!("/temp_blocks/block_{}.json", i);
         let new_file_name = format!("/my_blocks/block_{}.json", i);
-        std::fs::rename(file_name, new_file_name).expect("Error moving file");
+        file_system::rename(file_name, new_file_name).expect("Error moving file");
     }
 
     result
@@ -114,7 +177,7 @@ async fn unzip_file() -> Result<(), std::io::Error> {
     let tar_gz_path = "/temp_blocks.tar.gz".to_string();
 
     task::spawn_blocking(move || {
-        let tar_gz = std::fs::File::open(tar_gz_path)?;
+        let tar_gz = file_system::open(tar_gz_path)?;
         let mut archive = tar::Archive::new(tar_gz);
         archive.unpack(path_to_unpack)?;
         Ok::<(), std::io::Error>(()) // Specify the type explicitly here
@@ -126,7 +189,7 @@ async fn unzip_file() -> Result<(), std::io::Error> {
 
 pub async fn send_a_message(message:String,receiver:String,type_message:i16) -> String {
     // Assuming Tor is now installed and configured to listen on the default SOCKS5 port
-    let proxy=nodes_contacting::tor_proxy();
+    let proxy=tor_proxy();
     let node=format!("ws://{receiver}:8080");
     match connect_via_socks_proxy(ONION).await {
     
@@ -180,7 +243,8 @@ pub async fn send_a_message(message:String,receiver:String,type_message:i16) -> 
 
 #[tokio::main]
 pub async fn main() -> tokio::io::Result<()> {
-    nodes_contacting::tor_proxy();
+    tor_proxy();
+    download_blockchain().await;
     //ask user to choose which port to listen on
     println!("Enter the port to listen on");
     let mut port = String::new();
@@ -200,12 +264,13 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     let ws_stream = accept_async(stream).await.expect("Error during the websocket handshake");
     let (mut write, mut read) = ws_stream.split();
         // Send a ping to port 8888 each time a new connection is established
+            // Initial message to the client
+        write.send(Message::Text("Hello, World!".into())).await.expect("Error sending message");
         if let Err(e) = ping_onion_dns().await {
             eprintln!("Error pinging port 8888: {}", e);
         }
 
-    // Initial message to the client
-    write.send(Message::Text("Hello, World!".into())).await.expect("Error sending message");
+
 
     while let Some(message_result) = read.next().await {
         let message = match message_result {
@@ -217,7 +282,10 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         };
         let receiver = stream.peer_addr().unwrap().to_string();
         match message {
-            Message::Text(text) => check_blockchain_for_the_node(text,receiver),
+            Message::Text(text) => match check_blockchain_for_the_node(text,receiver,write).await.expect("Error checking blockchain") {
+                Ok(_) => println!("Received text message: {}", text),
+                Err(e) => eprintln!("Error checking blockchain: {}", e),
+            },
             Message::Binary(bin) => {
                 // Assuming `save_file` is a proper async function you've implemented
                 match save_file(bin).await { // Adjust path as needed
@@ -242,7 +310,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
 }
 
 
-fn check_blockchain_for_the_node(text:String,receiver:String){
+async fn check_blockchain_for_the_node(text:String,receiver:String,write:tokio_tungstenite::WebSocketStream) -> Result<(), Box<dyn std::error::Error>> {
     println!("Received text message: {}", text);
     if text.contains("/check") {
         let my_blocks = count_files_in_folder("my_blocks");
@@ -287,7 +355,7 @@ fn tar_gz_your_blockchain(first_block: i32, last_block: i32) -> Result<Vec<u8>, 
 
     for i in first_block..=last_block {
         let file_name = format!("my_blocks/block_{}.json", i);
-        let file_contents = fs::read_to_string(&file_name)?;
+        let file_contents = file_system::read_to_string(&file_name)?;
         let data = file_contents.as_bytes();
         tar.append_data(
             &mut tar::Header::new_gnu(),

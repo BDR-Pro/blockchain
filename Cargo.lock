@@ -344,6 +344,7 @@ dependencies = [
  "async-std",
  "blockchain_maker",
  "chrono",
+ "flate2",
  "futures-util",
  "openssl",
  "rocket",
@@ -352,7 +353,9 @@ dependencies = [
  "sha2",
  "tar",
  "tokio",
+ "tokio-socks",
  "tokio-tungstenite",
+ "url",
  "uuid",
  "zip",
 ]
