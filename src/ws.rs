@@ -9,15 +9,47 @@ use blockchain_maker::count_files_in_folder;
 use blockchain_maker::Blockchain;
 use tokio::task;
 use futures_util::SinkExt;
+use crate::ws;
 pub mod nodes_contacting;
 
 const ONION: &str = "ws://3hdwjjn2kor75ribq7xiws5hzuh4jwg7llinlngrfrpklqstramqrvqd.onion:8888";
+
+
+async fn connect_via_socks_proxy(target_url: &str) -> Result<WebSocketStream<Socks5Stream<TcpStream>>, Error> {
+    let proxy_addr = "socks5://127.0.0.1:9050";
+    let target_url = Url::parse(target_url).expect("Invalid WebSocket URL");
+
+    // Establish a TCP connection to the SOCKS proxy
+    let stream = Socks5Stream::connect(proxy_addr, target_url).await.expect("Failed to connect to SOCKS proxy");
+
+    // Upgrade the TCP connection to a WebSocket connection
+    let (ws_stream, _) = tokio_tungstenite::client_async(target_url, stream).await?;
+
+    Ok(ws_stream)
+}
 
 async fn ping_onion_dns() -> Result<(), Box<dyn std::error::Error>> {
     //use proxy
     let proxy=nodes_contacting::tor_proxy();
     // Connect to the onion dns
-    let (mut ws_stream, _) = connect_async(ONION,proxy).await?;
+    match connect_via_socks_proxy(ONION).await {
+
+        Ok((mut ws_stream, _)) => {
+            // Send a ping message
+            ws_stream.send(Message::Ping(vec![])).await?;
+            // Wait for a pong message or ignore it, depending on your protocol
+            if let Some(message) = ws_stream.next().await {
+                match message? {
+                    Message::Pong(_) => println!("Received pong from onion dns {}", ONION),
+                    _ => println!("Unexpected message type from onion dns")
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("Error connecting to onion dns: {}", e);
+        }
+        
+    }
 
     // Send a ping message
     ws_stream.send(Message::Ping(vec![])).await?;
@@ -95,11 +127,11 @@ async fn unzip_file() -> Result<(), std::io::Error> {
 pub async fn send_a_message(message:String,receiver:String,type_message:i16) -> String {
     // Assuming Tor is now installed and configured to listen on the default SOCKS5 port
     let proxy=nodes_contacting::tor_proxy();
-
-    let (mut ws_stream, _) = connect_async(format!("ws://{receiver}:8080"),proxy).await?;
+    let node=format!("ws://{receiver}:8080");
+    match connect_via_socks_proxy(ONION).await {
     
     // Send a text message
-
+    Ok((mut ws_stream, _)) => {
     if type_message == 1 {
         ws_stream.send(Message::Text(message.into())).await?;
         // Wait for a response
@@ -138,19 +170,22 @@ pub async fn send_a_message(message:String,receiver:String,type_message:i16) -> 
 
 
     }
-    else {
-        println!("Invalid message type");
+
+}
+    Err(e) => {
+        eprintln!("Error connecting to onion dns: {}", e);
     }
 
-
-
-    Ok(())
 }
 
 #[tokio::main]
-async fn main() -> tokio::io::Result<()> {
+pub async fn main() -> tokio::io::Result<()> {
     nodes_contacting::tor_proxy();
-    let addr = "127.0.0.1:8080";
+    //ask user to choose which port to listen on
+    println!("Enter the port to listen on");
+    let mut port = String::new();
+    std::io::stdin().read_line(&mut port).expect("Failed to read line");
+    let addr = format!("127.0.0.1:{}",port);
     let listener = TcpListener::bind(&addr).await.expect("Can't bind to address");
     println!("Listening on: ws://{}", addr);
 
@@ -267,4 +302,5 @@ fn tar_gz_your_blockchain(first_block: i32, last_block: i32) -> Result<Vec<u8>, 
     let compressed_data = tar_gz.finish()?;
 
     Ok(compressed_data)
+}
 }

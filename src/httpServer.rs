@@ -5,38 +5,9 @@ use std::io::Write;
 use std::path::Path;
 use blockchain::{count_files_in_folder, get_block_hash_from_file};
 use zip::ZipArchive;
+pub mod nodes_contacting;
 
 
-
-pub fn start_tor() -> Result<(), Box<dyn Error>>{
-  
-    let tor_installed = if cfg!(target_os = "windows") {
-        is_tor_installed_windows()
-    } else {
-        is_tor_installed_unix()
-    };
-    if !tor_installed {
-        println!("Tor is not installed. Installing...");
-        install_tor();
-        let text = format!("HiddenServiceDir {}
-        HiddenServicePort 80 127.0.0.1:{}",env::current_dir().unwrap().to_str().unwrap(), 8000);
-        let _ = config_file("etc/tor/torrc", &text);
-    } else {
-        println!("Tor is already installed. Proceeding...");
-        // Start Tor
-        Command::new("tor").spawn()?;
-        
-    }
-
-
-}
-
-
-
-pub fn stop_tor() -> Result<(), Box<dyn Error>>{
-    stop_tor();
-    Ok(())
-}
 
 pub fn copy_hostname() -> Result<String, Box<dyn Error>>{
     let mut file = File::open("hostname")?;
@@ -67,72 +38,6 @@ fn create(payment: String) -> std::io::Result<String> {
 }
 
 
-#[get("/sync?<block_number>&<blockleng>")]
-async fn sync(block_number: usize) -> Result<ReaderStream<Cursor<Vec<u8>>>, rocket::response::Debug<std::io::Error>> {
-    let mut cursor = Cursor::new(Vec::new());
-    {
-        //send him any file after the blocknumber 
-        let mut blockleng = count_files_in_folder("my_blocks").unwrap();
-        if  blockleng == block_number as usize {
-            return "The blockchain is up to date.";
-
-        }
-        if blockleng > block_number as usize {
-        block_number += 1;
-        blockleng += 1;
-        
-        let mut zip = ZipWriter::new(cursor);
-
-        for i in block_number..=blockleng {
-            let file_path = Path::new("my_blocks").join(format!("{}.json", i));
-            let mut file = match File::open(file_path).await {
-                Ok(f) => f,
-                Err(e) => {
-                    println!("Failed to open file: {:?}", e);
-                    continue; // Skip files that cannot be opened
-                }
-            };
-
-            let mut buffer = Vec::new();
-            match file.read_to_end(&mut buffer).await {
-                Ok(_) => (),
-                Err(e) => {
-                    println!("Failed to read file: {:?}", e);
-                    continue; // Skip files that cannot be read
-                }
-            }
-
-            let file_name = format!("{}.json", i);
-            zip.start_file(file_name, FileOptions::default().compression_method(CompressionMethod::Stored)).expect("Failed to add file to ZIP");
-            zip.write_all(&buffer).expect("Failed to write file to ZIP");
-        }
-
-        zip.finish().expect("Failed to complete ZIP file");
-        cursor.set_position(0); // Reset cursor to the beginning of the ZIP file
-    }
-
-    Ok(ReaderStream::new(cursor))
-}
-
-#[get("/check?block_number=<block_number>")]
-fn check() -> &'static str {
-    let blockleng = count_files_in_folder("my_blocks").unwrap();
-    if  blockleng == block_number as usize {
-        return "The blockchain is up to date.";
-
-    }
-
-    if blockleng > block_number as usize {
-        return "The blockchain is ahead of you please sync.";
-    }
-
-    if blockleng < block_number as usize {
-        return "My blockchain is behind you please wait for me to sync";
-    }
-
-}
- 
-}
 
 #[launch]
 fn rocket() -> _ {
