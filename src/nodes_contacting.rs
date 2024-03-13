@@ -4,8 +4,9 @@ use reqwest;
 use Tor_Traffic_Router::{is_tor_installed_unix, install_tor,is_tor_installed_windows};
 use zip::ZipArchive;
 use blockchain::{count_files_in_folder, validate_chain,load_chain_from_disk};
+pub mod ws;
 
-pub fn tor_proxy(){
+pub fn tor_proxy() -> reqwest::Client{
     
     let tor_installed = if cfg!(target_os = "windows") {
         is_tor_installed_windows()
@@ -19,13 +20,17 @@ pub fn tor_proxy(){
         println!("Tor is already installed. Proceeding...");
         // Start Tor
         Command::new("tor").spawn()?;
+        let proxy = reqwest::Proxy::all("socks5://127.0.0.1:9050")?;
+        let client = Client::builder().proxy(proxy).build()?;
         
+        return client;
     }
 
 }
 
 pub async fn download_blockchain() {
     // Read the contents of the file
+    let proxy=tor_proxy();
     let file_contents = fs::read_to_string("/nodes/onion.txt")
         .expect("Failed to read the file");
 
@@ -37,50 +42,13 @@ pub async fn download_blockchain() {
     let random_index = rng.gen_range(0..lines.len());
 
     // Retrieve the line at the random index
-    let mut random_line = lines[random_index];
+    let mut random_node = lines[random_index];
 
     // Assuming Tor is now installed and configured to listen on the default SOCKS5 port
-    let proxy = reqwest::Proxy::all("socks5://127.0.0.1:9050")?;
     let blockleng = count_files_in_folder("my_blocks");
-    random_line = format!("{}/check?block_number={}", random_line, blockleng);
-    let client = Client::builder().proxy(proxy).build()?;
-    let response = client.get(random_line).send()?;
-    let body = response.text()?;
-    if body.contains("The blockchain is ahead of you please sync."){
+    let my_message = format!("/check?block_number={}",blockleng);
+    send_a_message(my_message,random_node,1);
 
-    random_line = format!("{}/sync?block_number={}", random_line, blockleng);
-    let response = client.get(random_line).send()?;
-    // save file to my_blocks
-    let bytes = response.bytes()?;
-
-    // Save the ZIP file locally
-    let zip_path = "downloaded_blocks.zip";
-    let mut file = File::create(zip_path)?;
-    file.write_all(&bytes)?;
-    // Unzip the file
-    let file = File::open(zip_path)?;
-    let mut archive = ZipArchive::new(file)?;
-    archive.extract("temp_until_verifying")?;
-    //temp until verifying is the folder that contains the new blocks to be verified
-    //REMOVE THE ZIP FILE
-    fs::remove_file(zip_path)?;
-    //VERIFY THE BLOCKCHAIN
-    if validate_chain("temp_until_verifying"){
-        //MOVE THE BLOCKS TO MY_BLOCKS
-        for entry in fs::read_dir("temp_until_verifying")? {
-            let entry = entry?;
-            let path = entry.path();
-            fs::copy(path, "my_blocks")?;
-        }
-        //REMOVE THE TEMP FOLDER
-        fs::remove_dir_all("temp_until_verifying")?;
-
-    }
-    }
-    else{
-        println!("The blockchain is up to date.");
-
-    }
 
     }
 

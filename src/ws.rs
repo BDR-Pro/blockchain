@@ -14,7 +14,10 @@ pub mod nodes_contacting;
 const ONION: &str = "ws://3hdwjjn2kor75ribq7xiws5hzuh4jwg7llinlngrfrpklqstramqrvqd.onion:8888";
 
 async fn ping_onion_dns() -> Result<(), Box<dyn std::error::Error>> {
-    let (mut ws_stream, _) = connect_async(ONION).await?;
+    //use proxy
+    let proxy=nodes_contacting::tor_proxy();
+    // Connect to the onion dns
+    let (mut ws_stream, _) = connect_async(ONION,proxy).await?;
 
     // Send a ping message
     ws_stream.send(Message::Ping(vec![])).await?;
@@ -91,10 +94,9 @@ async fn unzip_file() -> Result<(), std::io::Error> {
 
 pub async fn send_a_message(message:String,receiver:String,type_message:i16) -> String {
     // Assuming Tor is now installed and configured to listen on the default SOCKS5 port
-    nodes_contacting::tor_proxy();
-    let client = Client::builder().proxy(proxy).build()?;
+    let proxy=nodes_contacting::tor_proxy();
 
-    let (mut ws_stream, _) = connect_async(format!("ws://{receiver}:8080")).await?;
+    let (mut ws_stream, _) = connect_async(format!("ws://{receiver}:8080"),proxy).await?;
     
     // Send a text message
 
@@ -177,9 +179,9 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                 break;
             }
         };
-
+        let receiver = stream.peer_addr().unwrap().to_string();
         match message {
-            Message::Text(text) => println!("Received text message: {}", text),
+            Message::Text(text) => check_blockchain_for_the_node(text,receiver),
             Message::Binary(bin) => {
                 // Assuming `save_file` is a proper async function you've implemented
                 match save_file(bin).await { // Adjust path as needed
@@ -201,4 +203,67 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
             _ => () // Handle other message types or do nothing
         }
     }
+}
+
+
+fn check_blockchain_for_the_node(text:String,receiver:String){
+    println!("Received text message: {}", text);
+    if text.contains("/check") {
+        let my_blocks = count_files_in_folder("my_blocks");
+        let block_number = text.replace("/check?block_number=", "");
+        let block_number = block_number.parse::<i32>().unwrap();
+        if block_number < my_blocks {
+            let response = send_a_message("The blockchain is ahead of you please sync. 201".to_string(),receiver,1).await;
+            write.send(Message::Text(response)).await.expect("Error sending message");
+        }
+        else {
+            let response = send_a_message("The blockchain is behind you please send blockchain data 404.".to_string(),receiver,1).await;
+            write.send(Message::Text(response)).await.expect("Error sending message");
+        }
+        
+    }
+    else if text.contains("/sync") {
+        let my_blocks = count_files_in_folder("my_blocks");
+        let block_number = text.replace("/sync?block_number=", "");
+        let block_number = block_number.parse::<i32>().unwrap();
+        if block_number < my_blocks {
+            let response = send_a_message(tar_gz_your_blockchain(block_number+1,my_blocks),receiver,2).await;
+            write.send(Message::Text(response)).await.expect("Error sending message");
+        }
+        else {
+            let response = send_a_message("The blockchain is behind you please send blockchain data 404.".to_string(),receiver,1).await;
+            send_a_message(format!("/sync?block_nukmber={}",my_blocks).to_string(),receiver,1).await;
+            write.send(Message::Text(response)).await.expect("Error sending message");
+        }
+    }
+    else {
+        let response = send_a_message("Invalid request".to_string(),receiver,1).await;
+        write.send(Message::Text(response)).await.expect("Error sending message");
+    }
+}
+
+
+fn tar_gz_your_blockchain(first_block: i32, last_block: i32) -> Result<Vec<u8>, Box<dyn Error>> {
+    // Create a GzEncoder which will write to a Vec<u8> buffer.
+    let tar_gz = GzEncoder::new(Vec::new(), Compression::default());
+    // Create a new tar builder with the GzEncoder as the writer.
+    let mut tar = Builder::new(tar_gz);
+
+    for i in first_block..=last_block {
+        let file_name = format!("my_blocks/block_{}.json", i);
+        let file_contents = fs::read_to_string(&file_name)?;
+        let data = file_contents.as_bytes();
+        tar.append_data(
+            &mut tar::Header::new_gnu(),
+            file_name,
+            data,
+        )?;
+    }
+
+    // Complete the tar archive.
+    let tar_gz = tar.into_inner()?;
+    // Finalize the GzEncoder and get the compressed data.
+    let compressed_data = tar_gz.finish()?;
+
+    Ok(compressed_data)
 }
