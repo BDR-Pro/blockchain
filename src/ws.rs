@@ -149,6 +149,7 @@ pub async fn send_a_message(message:String,receiver:String,type_message:i16) -> 
 
 #[tokio::main]
 async fn main() -> tokio::io::Result<()> {
+    nodes_contacting::tor_proxy();
     let addr = "127.0.0.1:8080";
     let listener = TcpListener::bind(&addr).await.expect("Can't bind to address");
     println!("Listening on: ws://{}", addr);
