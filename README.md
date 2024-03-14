@@ -490,7 +490,6 @@ async def test_ws():
 
 #### "Connect and vibe with your digital tribe! 🌐 Our 'WebSquad' platform pings via WS, linking you to other cool WS clients. Stay synced, stay connected. #WebSquad #StayLinked"
 
-
 1. **Start Server**: Initialize WebSocket server on port 8888.
 2. **Receive Message**: Await "ping" message from connected clients.
 3. **Read File**:
@@ -508,3 +507,163 @@ async def test_ws():
 Got questions, suggestions, or just wanna chat about the meaning of life? Slide into our DMs. Let’s make magic happen together.
 
 Let’s get this computational party started! 🎉💻
+
+### WS.rs
+
+```rust
+
+// Import necessary crates and modules
+use futures_util::{SinkExt, StreamExt};
+use rand::thread_rng;
+use reqwest::Client;
+use std::error::Error as StdError;
+use tar::Builder;
+use tokio::{
+    fs::File as TokioFile,
+    io::AsyncWriteExt,
+    net::{TcpListener, TcpStream},
+    task,
+};
+use tokio_socks::tcp::Socks5Stream;
+use tokio_tungstenite::{accept_async, tungstenite::protocol::Message, WebSocketStream};
+use url::Url;
+
+/// Downloads and synchronizes the blockchain from a random node.
+///
+/// This function reads a list of node addresses from a file, selects one at random,
+/// and initiates a synchronization request to download the blockchain.
+pub async fn download_blockchain() {
+    // Implementation details...
+}
+
+/// Establishes a WebSocket connection through a SOCKS5 proxy.
+///
+/// # Arguments
+///
+/// * `target_url` - The URL of the target WebSocket server.
+///
+/// # Returns
+///
+/// A Result containing the WebSocketStream if successful, or an error otherwise.
+async fn connect_via_socks_proxy(target_url: &str) -> Result<WebSocketStream<Socks5Stream<TcpStream>>, Error> {
+    // Implementation details...
+}
+
+/// Sends a ping message to an onion DNS service to check connectivity.
+///
+/// # Returns
+///
+/// A Result indicating success or error.
+async fn ping_onion_dns() -> Result<(), Box<dyn std::error::Error>> {
+    // Implementation details...
+}
+
+/// Saves a binary file asynchronously.
+///
+/// # Arguments
+///
+/// * `bin` - The binary content to be saved.
+///
+/// # Returns
+///
+/// A Result indicating success or error.
+async fn save_file(bin: Vec<u8>) -> Result<(), std::io::Error> {
+    // Implementation details...
+}
+
+/// Converts a usize to an i32 safely.
+///
+/// # Arguments
+///
+/// * `value` - The usize value to be converted.
+///
+/// # Returns
+///
+/// A Result containing the converted i32 value or an error if the conversion is not possible.
+fn usize_to_i32(value: Result<usize, std::io::Error>) -> Result<i32, &'static str> {
+    // Implementation details...
+}
+
+/// Validates and updates the local blockchain with data from a specified directory.
+///
+/// # Arguments
+///
+/// * `path` - The path to the directory containing the blockchain data to be validated and incorporated.
+///
+/// # Returns
+///
+/// A boolean indicating whether the operation was successful.
+fn create_blockchain(path: String) -> bool {
+    // Implementation details...
+}
+
+/// Unzips a tar.gz file asynchronously.
+///
+/// # Returns
+///
+/// A Result indicating success or error.
+async fn unzip_file() -> Result<(), std::io::Error> {
+    // Implementation details...
+}
+
+/// Sends a message to a specified receiver using a WebSocket connection.
+///
+/// # Arguments
+///
+/// * `message` - The message to be sent.
+/// * `receiver` - The receiver's address.
+/// * `type_message` - The type of message to be sent.
+///
+/// # Returns
+///
+/// A string response from the receiver.
+pub async fn send_a_message(message: String, receiver: String, type_message: i16) -> String {
+    // Implementation details...
+}
+
+/// The main function initializes the Tor proxy and starts listening for incoming connections.
+#[tokio::main]
+pub async fn main() -> tokio::io::Result<()> {
+    // Implementation details...
+}
+
+/// Handles incoming WebSocket connections.
+///
+/// # Arguments
+///
+/// * `stream` - The TcpStream of the incoming connection.
+async fn handle_connection(stream: tokio::net::TcpStream) {
+    // Implementation details...
+}
+
+/// Checks the blockchain for synchronization requests or updates from a node.
+///
+/// # Arguments
+///
+/// * `text` - The received text message containing the request.
+/// * `receiver` - The address of the node that sent the message.
+/// * `write` - The WebSocket write half, used to send responses.
+///
+/// # Returns
+///
+/// A Result indicating success or error.
+async fn check_blockchain_for_the_node(text: String, receiver: String, write: WebSocketStream<TcpStream>) -> Result<(), Box<dyn StdError>> {
+    // Implementation details...
+}
+
+/// Compresses and serializes blockchain data into a tar.gz archive.
+///
+/// # Arguments
+///
+/// * `first_block` - The first block number to include in the archive.
+/// * `last_block` - The last block number to include in the archive.
+///
+/// # Returns
+///
+/// A Result containing the binary data of the compressed archive or an error.
+fn tar_gz_your_blockchain(first_block: i32, last_block: i32) -> Result<Vec<u8>, Box<dyn StdError>> {
+    // Implementation details...
+}
+
+
+```

@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "Tor_Traffic_Router"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3530b38e2008be9aa36ed85ed518935c89c76b68cb777ad595854a0bcf4adcdc"
+checksum = "b84fbf56ba38829f635823c2a9231c4994f5e5c9fb0701989b5d4174eb19bf92"
 dependencies = [
  "reqwest",
  "sysinfo",
@@ -347,6 +347,8 @@ dependencies = [
  "flate2",
  "futures-util",
  "openssl",
+ "rand",
+ "reqwest",
  "rocket",
  "serde",
  "serde_json",
