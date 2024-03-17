@@ -14,16 +14,13 @@ openssl = "0.10.64"
 async-std = "1.9"
 Tor_Traffic_Router = "0.3.0"
 rocket = "0.5"
-tokio = { version = "1", features = ["full"] }
 uuid = { version = "1.0", features = ["v4"] }  
 zip = "0.6.6"
-tokio-tungstenite = "0.21"
-futures-util = "0.3"
 blockchain_maker = "1.1.0"
-tar = "0.4.26"
-async-compat = "0.2.3"
-url = "2.0" 
-tokio-socks = "0.5" 
-flate2 = "1.0"
-rand = "0.8"
-reqwest = "0.11"
+tokio-socks = "0.5"
+socks = "0.3.3"
+futures = "0.3"
+libp2p = { version = "0.53", features = ["tcp", "tls", "kad", "identify", "request-response", "cbor", "tokio", "dns", "noise", "yamux", "macros"] }
+tokio = { version = "1", features = ["full"] }
+env_logger = "0.11.1"
+log = "0.4.20"

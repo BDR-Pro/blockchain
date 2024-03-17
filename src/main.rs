@@ -1,5 +1,7 @@
-
+pub mod libp2p;
 
 fn main(){
-    println!("Hello, world!");
+    let result = libp2p::main();
+
+    println!("{:?}", result);
 }
