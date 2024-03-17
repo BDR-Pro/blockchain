@@ -1,5 +1,5 @@
-pub mod ws;
 
-fn main() {
-    ws::main();
+
+fn main(){
+    println!("Hello, world!");
 }
