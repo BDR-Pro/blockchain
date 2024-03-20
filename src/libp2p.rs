@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::env::args;
 use std::error::Error;
 use std::time::Duration;
-
-use tokio;
 use log::{info, error, warn};
 use env_logger::{Env, Builder};
 
