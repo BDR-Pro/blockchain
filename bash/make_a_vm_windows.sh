@@ -1,35 +1,25 @@
 #!/bin/bash
 
 # Variables
-VM_NAME="Windows 10"
-VM_ISO_PATH="$HOME/Downloads/Win10_20H2_v2_English_x64.iso" # Change to your ISO path
-VM_DIRECTORY="$HOME/VirtualBox VMs/$VM_NAME"
+VM_NAME="WinDev2401Eval"
+ZIP_URL="https://aka.ms/windev_VM_vmware" # Replace this with your direct link
+ZIP_FILE="$HOME/Downloads/$VM_NAME.zip"
+EXTRACTED_OVA_PATH="$HOME/Downloads" # Adjust based on where you want to extract the ZIP contents
 
-# Create VM directory if it doesn't exist
-mkdir -p "$VM_DIRECTORY"
+# Use curl with -L to follow redirects and download the ZIP file containing the OVA for the Windows development environment
+curl -L "$ZIP_URL" -o "$ZIP_FILE"
 
-# Create and register the VM
-VBoxManage createvm --name "$VM_NAME" --ostype Windows10_64 --register
+# Assuming the download is a ZIP file; unzip it
+unzip -o "$ZIP_FILE" -d "$EXTRACTED_OVA_PATH"
 
-# Modify VM settings
-VBoxManage modifyvm "$VM_NAME" --cpus 2 --memory 4096 --vram 128 --graphicscontroller vmsvga --usbohci on --mouse usbtablet
+# Find the OVA file in the extracted directory
+# This assumes the OVA file's name contains 'WinDev' and is the only OVA in the directory
+OVA_FILE=$(find "$EXTRACTED_OVA_PATH" -type f -name "*WinDev*.ova")
 
-# Create a virtual hard disk
-VBoxManage createhd --filename "$VM_DIRECTORY/$VM_NAME.vdi" --size 50000 --variant Standard
+# Import the OVA file into VirtualBox
+VBoxManage import "$OVA_FILE" --vsys 0 --vmname "$VM_NAME"
 
-# Add a SATA controller and attach the VDI
-VBoxManage storagectl "$VM_NAME" --name "SATA Controller" --add sata --bootable on
-VBoxManage storageattach "$VM_NAME" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium "$VM_DIRECTORY/$VM_NAME.vdi"
-
-# Add an IDE controller and attach the Windows ISO
-VBoxManage storagectl "$VM_NAME" --name "IDE Controller" --add ide
-VBoxManage storageattach "$VM_NAME" --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium "$VM_ISO_PATH"
-
-# (Optional) Add an empty drive to simulate a place for Windows installation media or additional tools
-VBoxManage storageattach "$VM_NAME" --storagectl "IDE Controller" --port 1 --device 0 --type dvddrive --medium emptydrive
-
-# Start the VM in GUI mode
+# Start the imported VM
 VBoxManage startvm "$VM_NAME" --type gui
 
-# Note: After this point, you will need to manually proceed with the Windows installation process.
-# This includes formatting the virtual hard disk during setup, entering a product key, and configuring initial settings.
+# Note: Adjust extraction and import logic based on the actual content and structure of the ZIP file.

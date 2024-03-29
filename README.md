@@ -675,12 +675,21 @@ fn tar_gz_your_blockchain(first_block: i32, last_block: i32) -> Result<Vec<u8>, 
 ./send_to_vm.sh --vm_name "YourVMName" --snapshot_name "YourSnapshotName" --user "vmUser" --vm_ip "vmIPAddress" --file_to_send "path/to/your/file" --executable_on_vm "/path/on/vm/yourFile" --result_file_on_vm "/path/on/vm/result.txt" --result_file_on_host "path/on/host/result.txt"
 
 ```
-### Make A Vm
+
+### Make A VM
 
 jsut run the following command
 
 ```bash
 
 ./make_a_vm.sh 
+
+```
+
+for windows users
+
+```bash
+
+make_a_vm_windows.sh
 
 ```
